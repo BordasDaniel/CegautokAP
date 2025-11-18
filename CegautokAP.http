@@ -1,0 +1,6 @@
+@CegautokAP_HostAddress = http://localhost:5109
+
+GET {{CegautokAP_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
