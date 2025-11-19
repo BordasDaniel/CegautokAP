@@ -19,9 +19,11 @@ public partial class User
 
     public string? Phone { get; set; }
 
-    public string? Image { get; set; } = null!;
+    public string Image { get; set; } = null!;
 
     public int Permission { get; set; }
 
-    public virtual Privilege? PermissionNavigation { get; set; } = null!;
+    public virtual ICollection<Kikuldottjarmu> Kikuldottjarmus { get; set; } = new List<Kikuldottjarmu>();
+
+    public virtual Privilege PermissionNavigation { get; set; } = null!;
 }

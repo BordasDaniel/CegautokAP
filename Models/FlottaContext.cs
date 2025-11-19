@@ -15,6 +15,12 @@ public partial class FlottaContext : DbContext
     {
     }
 
+    public virtual DbSet<Gepjarmu> Gepjarmus { get; set; }
+
+    public virtual DbSet<Kikuldottjarmu> Kikuldottjarmus { get; set; }
+
+    public virtual DbSet<Kikuldte> Kikuldtes { get; set; }
+
     public virtual DbSet<Privilege> Privileges { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -26,11 +32,66 @@ public partial class FlottaContext : DbContext
         .AddJsonFile("appsettings.json")
         .Build();
         optionsBuilder.UseMySQL(configuration.GetConnectionString("FlottaConnection"));
-
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Gepjarmu>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("gepjarmu");
+
+            entity.Property(e => e.Id).HasColumnType("int(11)");
+            entity.Property(e => e.Marka).HasMaxLength(16);
+            entity.Property(e => e.Rendszam).HasMaxLength(8);
+            entity.Property(e => e.Tipus).HasMaxLength(16);
+            entity.Property(e => e.Ulesek).HasColumnType("int(11)");
+        });
+
+        modelBuilder.Entity<Kikuldottjarmu>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("kikuldottjarmu");
+
+            entity.HasIndex(e => e.GepjarmuId, "GepjarmuId");
+
+            entity.HasIndex(e => e.KikuldetesId, "KikuldetesId");
+
+            entity.HasIndex(e => e.Sofor, "Sofor");
+
+            entity.Property(e => e.Id).HasColumnType("int(11)");
+            entity.Property(e => e.GepjarmuId).HasColumnType("int(11)");
+            entity.Property(e => e.KikuldetesId).HasColumnType("int(11)");
+            entity.Property(e => e.Sofor).HasColumnType("int(11)");
+
+            entity.HasOne(d => d.Gepjarmu).WithMany(p => p.Kikuldottjarmus)
+                .HasForeignKey(d => d.GepjarmuId)
+                .HasConstraintName("kikuldottjarmu_ibfk_1");
+
+            entity.HasOne(d => d.Kikuldetes).WithMany(p => p.Kikuldottjarmus)
+                .HasForeignKey(d => d.KikuldetesId)
+                .HasConstraintName("kikuldottjarmu_ibfk_2");
+
+            entity.HasOne(d => d.SoforNavigation).WithMany(p => p.Kikuldottjarmus)
+                .HasForeignKey(d => d.Sofor)
+                .HasConstraintName("kikuldottjarmu_ibfk_3");
+        });
+
+        modelBuilder.Entity<Kikuldte>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("kikuldtes");
+
+            entity.Property(e => e.Id).HasColumnType("int(11)");
+            entity.Property(e => e.Befejezes).HasColumnType("datetime");
+            entity.Property(e => e.Celja).HasColumnType("text");
+            entity.Property(e => e.Cim).HasMaxLength(28);
+            entity.Property(e => e.Kezdes).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Privilege>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
