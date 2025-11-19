@@ -76,7 +76,7 @@ namespace CegautokAP.Controllers
             {
                 try
                 {
-                    user.Image ??= "..\\imgs\\defaultUser.jpg";
+                    user.Image ??= @"defaultUser.jpg";
                     
                     context.Add(user);
                     context.SaveChanges();
