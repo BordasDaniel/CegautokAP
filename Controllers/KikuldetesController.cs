@@ -126,37 +126,64 @@ namespace CegautokAP.Controllers
             {
                 try
                 {
-                    try
-                    {
-                        List<SoforDTO> jarmu = [.. context.Kikuldottjarmus
-                         .Include(x => x.Kikuldetes)
-                         .Include(x => x.SoforNavigation)
+                    List<SoforDTO> dto = [.. context.Kikuldottjarmus
                          .Include(x => x.Gepjarmu)
-                         .Include(x=> x.Sofor)
-                         .Select(x=> new SoforDTO()
+                         .Include(x => x.SoforNavigation)
+                         .GroupBy(x => new
                          {
-                             Rendszam = x.Gepjarmu.Rendszam,
-                             SoforNev = x.SoforNavigation.Name,
-                             Darab = x.
+                             rsz = x.Gepjarmu.Rendszam,
+                             sof = x.SoforNavigation.Name
+                         }).Select(elem => new SoforDTO()
+                         {
+                             Rendszam = elem.Key.rsz,
+                             SoforNev = elem.Key.sof,
+                             Darab = elem.Count()
                          })];
 
+                    return Ok(dto);
 
-                        if (jarmu is Kikuldottjarmu)
-                        {
-                            SoforDTO dto = new()
-                            {
-                                SoforNev = jarmu.Sofor.,
-                                Datum = jarmu.Kikuldetes.Befejezes,
-                                Rendszam = jarmu.Gepjarmu.Rendszam
-                            };
-                            return Ok(dto);
-                        }
-                        else return BadRequest("Nincs ilyen azonosító!");
 
-                    } catch (Exception ex)
+
+                } catch (Exception ex)
                 {
-
+                    return BadRequest(new SoforDTO()
+                    {
+                        SoforNev = "Hiba",
+                        Darab = -1,
+                        Rendszam = ex.Message
+                    });
                 }
+            }
+        }
+        /*
+         KikuldetesControllerben kellene megállpaítani, hogy adott Idű kiküldetésnél ki volt a sofőr
+         */
+
+        [HttpGet("KikuldetesSoforje/{Id}")]
+        public IActionResult KikuldetesSoforje(int Id)
+        {
+            try
+            {
+                using(var context = new FlottaContext())
+                {
+                    KikuldetesSoforDTO dto = context.Kikuldottjarmus
+                        .Include(x => x.Sofor)
+                        .Where(x => x.Kikuldetes.Id == Id)
+                        .Select(x => new KikuldetesSoforDTO()
+                        {
+                            KikuldetesId = Id,
+                            SoforNev = x.SoforNavigation.Name
+                        }).FirstOrDefault();
+
+
+                    if (dto is KikuldetesSoforDTO) return Ok(dto);
+                    else return BadRequest("Nincs ilyen azonosítóval!");
+                }
+
+            } catch (Exception ex)
+            {
+                return BadRequest("bottomtext "+ ex.Message);
+            }
         }
 
 
