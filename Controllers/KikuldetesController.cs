@@ -79,6 +79,86 @@ namespace CegautokAP.Controllers
             }
         }
 
+        [HttpGet("Jarmu/{Id}/Hasznalat")]
+        public IActionResult GetHasznalat(int Id)
+        {
+            using (var context = new FlottaContext())
+            {
+                try
+                {
+                    Kikuldottjarmu jarmu = context.Kikuldottjarmus
+                     .Include(x => x.Kikuldetes)
+                     .Include(x => x.Gepjarmu)
+                     .FirstOrDefault(x => x.Id == Id);
+
+
+                    if (jarmu is Kikuldottjarmu)
+                    {
+                        HasznalatDTO dto = new()
+                        {
+                            Id = Id,
+                            Rendszam = jarmu.Gepjarmu.Rendszam,
+                            Kezdes = jarmu.Kikuldetes.Kezdes,
+                            Befejezes = jarmu.Kikuldetes.Befejezes
+                        };
+                        return Ok(dto);
+                    }
+                    else return BadRequest("Nincs ilyen azonosító!");
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new HasznalatDTO()
+                    {
+                        Id = -1,
+                        Rendszam = ex.Message,
+                        Kezdes = DateTime.Now,
+                        Befejezes = DateTime.Now
+                    });
+                }
+            }
+        }
+
+        [HttpGet("Jarmu/Sofor")]
+        public IActionResult GetSoforDTO()
+        {
+            using (var context = new FlottaContext())
+            {
+                try
+                {
+                    try
+                    {
+                        List<SoforDTO> jarmu = [.. context.Kikuldottjarmus
+                         .Include(x => x.Kikuldetes)
+                         .Include(x => x.SoforNavigation)
+                         .Include(x => x.Gepjarmu)
+                         .Include(x=> x.Sofor)
+                         .Select(x=> new SoforDTO()
+                         {
+                             Rendszam = x.Gepjarmu.Rendszam,
+                             SoforNev = x.SoforNavigation.Name,
+                             Darab = x.
+                         })];
+
+
+                        if (jarmu is Kikuldottjarmu)
+                        {
+                            SoforDTO dto = new()
+                            {
+                                SoforNev = jarmu.Sofor.,
+                                Datum = jarmu.Kikuldetes.Befejezes,
+                                Rendszam = jarmu.Gepjarmu.Rendszam
+                            };
+                            return Ok(dto);
+                        }
+                        else return BadRequest("Nincs ilyen azonosító!");
+
+                    } catch (Exception ex)
+                {
+
+                }
+        }
+
 
         [HttpGet("Kikuldtes")]
         public IActionResult GetAllKikuldtes()
