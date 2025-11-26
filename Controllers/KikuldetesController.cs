@@ -1,4 +1,5 @@
-﻿using CegautokAP.Models;
+﻿using CegautokAP.DTO;
+using CegautokAP.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,76 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class KikuldetesController : ControllerBase
     {
+        [HttpGet("Jarmuvek")]
+        public IActionResult GetJarmuvekDTO()
+        {
+            using (var context = new FlottaContext())
+            {
+                try
+                {
+                    List<KikuldJarmuDTO> valasz = [.. context.Kikuldottjarmus
+                        .Include(x => x.Kikuldetes)
+                        .Include(x => x.Gepjarmu)
+                        .Select(x => new KikuldJarmuDTO()
+                    {
+                        Cim = x.Kikuldetes.Cim,
+                        Datum = x.Kikuldetes.Kezdes,
+                        Rendszam = x.Gepjarmu.Rendszam
+                    })];
+
+                    return Ok(valasz);
+
+                } catch(Exception ex)
+                {
+                    return BadRequest(new KikuldJarmuDTO()
+                    {
+                        Cim = ex.Message,
+                        Datum = DateTime.Now,
+                        Rendszam = "hiba"
+                    });
+                }
+            }
+        }
+
+        [HttpGet("Jarmuvek/{Id}")]
+        public IActionResult GetJarmuvekDTO(int Id)
+        {
+            using (var context = new FlottaContext())
+            {
+                try
+                {
+                    Kikuldottjarmu jarmu = context.Kikuldottjarmus
+                     .Include(x => x.Kikuldetes)
+                     .Include(x => x.Gepjarmu)
+                     .FirstOrDefault(x => x.Id == Id);
+
+
+                    if (jarmu is Kikuldottjarmu)
+                    {
+                        KikuldJarmuDTO dto = new()
+                        {
+                            Cim = jarmu.Kikuldetes.Cim,
+                            Datum = jarmu.Kikuldetes.Befejezes,
+                            Rendszam = jarmu.Gepjarmu.Rendszam
+                        };
+                        return Ok(dto);
+                    }
+                    else return BadRequest("Nincs ilyen azonosító!");
+                }
+
+                catch (Exception ex)
+                {
+                    return BadRequest(new KikuldJarmuDTO()
+                    {
+                        Cim = ex.Message,
+                        Datum = DateTime.Now,
+                        Rendszam = "hiba"
+                    });
+                }
+            }
+        }
+
+
         [HttpGet("Kikuldtes")]
         public IActionResult GetAllKikuldtes()
         {
