@@ -194,7 +194,7 @@ namespace CegautokAP.Controllers
             {
                 try
                 {
-                    List<Kikuldte> kikuldtes = [.. context.Kikuldtes];
+                    List<Kikuldete> kikuldtes = [.. context.Kikuldetes];
 
                     return Ok(kikuldtes);
 
@@ -221,7 +221,7 @@ namespace CegautokAP.Controllers
             {
                 try
                 {
-                    var kikuldte = context.Kikuldtes.FirstOrDefault(u => u.Id == Id);
+                    var kikuldte = context.Kikuldetes.FirstOrDefault(u => u.Id == Id);
                     if (kikuldte is Kikuldte)
                     {
                         return Ok(kikuldte);
@@ -268,56 +268,56 @@ namespace CegautokAP.Controllers
             }
         }
 
-        [HttpPut("ModifyKikuldte")]
-        public IActionResult ModifyKikuldte(Kikuldte kikuldte)
-        {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
-                try
-                {
-                    if (context.Kikuldtes.Contains(kikuldte))
-                    {
-                        context.Update(kikuldte);
-                        context.SaveChanges();
-                        return Ok("Sikeres módosítás!");
-                    }
-                    else
-                    {
-                        return BadRequest("Nincs ilyen kikuldte!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest($"Hiba a módosítás során: {ex.Message}");
-                }
-            }
-        }
+        //[HttpPut("ModifyKikuldte")]
+        //public IActionResult ModifyKikuldte(Kikuldte kikuldte)
+        //{
+        //    using (var context = new CegautokAP.Models.FlottaContext())
+        //    {
+        //        try
+        //        {
+        //            if (context.Kikuldtes.Contains(kikuldte))
+        //            {
+        //                context.Update(kikuldte);
+        //                context.SaveChanges();
+        //                return Ok("Sikeres módosítás!");
+        //            }
+        //            else
+        //            {
+        //                return BadRequest("Nincs ilyen kikuldte!");
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return BadRequest($"Hiba a módosítás során: {ex.Message}");
+        //        }
+        //    }
+        //}
 
-        [HttpDelete("DelKikuldte/{Id}")]
-        public IActionResult DeleteKikuldte(int Id)
-        {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
-                try
-                {
-                    if (context.Kikuldtes.Select(u => u.Id).Contains(Id))
-                    {
-                        Kikuldte del = context.Kikuldtes.FirstOrDefault(u => u.Id == Id);
-                        context.Remove(del);
-                        context.SaveChanges();
-                        return Ok("Sikeres törlés!");
-                    }
-                    else
-                    {
-                        return BadRequest("Nincs ilyen kikuldte!");
-                    }
+        //[HttpDelete("DelKikuldte/{Id}")]
+        //public IActionResult DeleteKikuldte(int Id)
+        //{
+        //    using (var context = new CegautokAP.Models.FlottaContext())
+        //    {
+        //        try
+        //        {
+        //            if (context.Kikuldetes.Select(u => u.Id).Contains(Id))
+        //            {
+        //                Kikuldte del = context.Kikuldete.FirstOrDefault(u => u.Id == Id);
+        //                context.Remove(del);
+        //                context.SaveChanges();
+        //                return Ok("Sikeres törlés!");
+        //            }
+        //            else
+        //            {
+        //                return BadRequest("Nincs ilyen kikuldte!");
+        //            }
 
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest($"Hiba a törlés közben: {ex.Message}");
-                }
-            }
-        }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return BadRequest($"Hiba a törlés közben: {ex.Message}");
+        //        }
+        //    }
+        //}
     }
 }
