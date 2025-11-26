@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace CegautokAP.Models;
 
-public partial class Gepjarmu
+public partial class Kikuldete
 {
     public int Id { get; set; }
 
-    public string Rendszam { get; set; } = null!;
+    public string Celja { get; set; } = null!;
 
-    public string Marka { get; set; } = null!;
+    public string Cim { get; set; } = null!;
 
-    public string Tipus { get; set; } = null!;
+    public DateTime Kezdes { get; set; }
 
-    public int Ulesek { get; set; }
+    public DateTime Befejezes { get; set; }
 
     public virtual ICollection<Kikuldottjarmu> Kikuldottjarmus { get; set; } = new List<Kikuldottjarmu>();
 }
