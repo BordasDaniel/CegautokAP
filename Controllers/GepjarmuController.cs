@@ -1,4 +1,5 @@
 ﻿using CegautokAP.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class GepjarmuController : ControllerBase
     {
+        [Authorize]
         [HttpGet("Gepjarmus")]
         public IActionResult GetAllGepjarmus()
         {

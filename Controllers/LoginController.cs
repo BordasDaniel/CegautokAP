@@ -2,6 +2,11 @@
 using CegautokAP.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 
 namespace CegautokAP.Controllers
 {
@@ -9,6 +14,12 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
+        private readonly JwtSettings _jwtSettings;
+
+        public LoginController(JwtSettings jwtSettings)
+        {
+            _jwtSettings = jwtSettings;
+        }
         
         [HttpGet("GetSalt")]
         public IActionResult GetSalt(string username)
@@ -33,7 +44,7 @@ namespace CegautokAP.Controllers
             
         }
 
-        [HttpGet("Login")]
+        [HttpPost("Login")]
         public IActionResult Login(LoginDTO loginDTO)
         {
             using (var context = new FlottaContext())
@@ -46,7 +57,21 @@ namespace CegautokAP.Controllers
                     {
                         return NotFound("Nincs megfelelő felhasználó! A belépés sikertelen!");
                     }
-                    return Ok("Sikeres belépés!");
+                    var claims = new[]
+                    {
+                        new Claim(JwtRegisteredClaimNames.Sub, user.LoginName),
+                        new Claim(JwtRegisteredClaimNames.Jti, doubleHash, Guid.NewGuid().ToString()),
+                    };
+
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecurityKey));
+                    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken(
+                        issuer: _jwtSettings.Issuer,
+                        audience: _jwtSettings.Audience,
+                        claims: claims,
+                        expires: DateTime.Now.AddMinutes(_jwtSettings.ExpirityMinutes),
+                        signingCredentials: creds);
+                    return Ok(new JwtSecurityTokenHandler().WriteToken(token));
 
                 } catch(Exception ex)
                 {
