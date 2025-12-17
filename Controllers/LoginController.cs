@@ -2,6 +2,7 @@
 using CegautokAP.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -51,7 +52,7 @@ namespace CegautokAP.Controllers
                 try
                 {
                     string doubleHash = Program.CreateSHA256(loginDTO.Hash);
-                    User user = _context.Users.FirstOrDefault(u => u.LoginName == loginDTO.LoginName && u.Hash == doubleHash && u.Active);
+                User user = _context.Users.Include(u => u.PermissionNavigation).FirstOrDefault(u => u.LoginName == loginDTO.LoginName && u.Hash == doubleHash && u.Active);
                     if (user == null)
                     {
                         return NotFound("Nincs megfelelő felhasználó! A belépés sikertelen!");
@@ -59,6 +60,7 @@ namespace CegautokAP.Controllers
                     var claims = new[]
                     {
                         new Claim(JwtRegisteredClaimNames.Sub, user.LoginName),
+                        new Claim(ClaimTypes.Role, user.PermissionNavigation.Level.ToString()),
                         new Claim(JwtRegisteredClaimNames.Jti, doubleHash, Guid.NewGuid().ToString()),
                     };
 
