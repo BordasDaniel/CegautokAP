@@ -10,15 +10,21 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class GepjarmuController : ControllerBase
     {
+        private readonly FlottaContext _context;
+
+        public GepjarmuController(FlottaContext context)
+        {
+            _context = context;
+        }
+
+
         [Authorize]
         [HttpGet("Gepjarmus")]
         public IActionResult GetAllGepjarmus()
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    List<Gepjarmu> gepjarmus = context.Gepjarmus.ToList();
+                    List<Gepjarmu> gepjarmus = _context.Gepjarmus.ToList();
                     return Ok(gepjarmus);
 
                 }
@@ -32,18 +38,14 @@ namespace CegautokAP.Controllers
                         Ulesek = -1
                     });
                 }
-
-            }
         }
 
         [HttpGet("GepjarmuById/{Id}")]
         public IActionResult GetGepjarmuById(int Id)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    var gepjarmu = context.Gepjarmus.FirstOrDefault(u => u.Id == Id);
+                    var gepjarmu = _context.Gepjarmus.FirstOrDefault(u => u.Id == Id);
                     if (gepjarmu is Gepjarmu)
                     {
                         return Ok(gepjarmu);
@@ -65,20 +67,17 @@ namespace CegautokAP.Controllers
                         Ulesek = -1
                     });
                 }
-            }
         }
 
 
         [HttpPost("NewGepjarmu")]
         public IActionResult AddNewGepjarmu(Gepjarmu gepjarmu)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
                     
-                    context.Add(gepjarmu);
-                    context.SaveChanges();
+                    _context.Add(gepjarmu);
+                    _context.SaveChanges();
                     return Ok("Sikeres rögzítés");
 
                 }
@@ -86,20 +85,17 @@ namespace CegautokAP.Controllers
                 {
                     return BadRequest($"Hiba történt a felvétel során: {ex.Message}");
                 }
-            }
         }
 
         [HttpPut("ModifyGepjarmu")]
         public IActionResult ModifyGepjarmu(Gepjarmu gepjarmu)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    if (context.Gepjarmus.Contains(gepjarmu))
+                    if (_context.Gepjarmus.Contains(gepjarmu))
                     {
-                        context.Update(gepjarmu);
-                        context.SaveChanges();
+                        _context.Update(gepjarmu);
+                        _context.SaveChanges();
                         return Ok("Sikeres módosítás!");
                     }
                     else
@@ -111,21 +107,18 @@ namespace CegautokAP.Controllers
                 {
                     return BadRequest($"Hiba a módosítás során: {ex.Message}");
                 }
-            }
         }
 
         [HttpDelete("DelGepjarmu/{Id}")]
         public IActionResult DeleteGepjarmu(int Id)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    if (context.Gepjarmus.Select(u => u.Id).Contains(Id))
+                    if (_context.Gepjarmus.Select(u => u.Id).Contains(Id))
                     {
-                        Gepjarmu del = context.Gepjarmus.FirstOrDefault(u => u.Id == Id);
-                        context.Remove(del);
-                        context.SaveChanges();
+                        Gepjarmu del = _context.Gepjarmus.FirstOrDefault(u => u.Id == Id);
+                        _context.Remove(del);
+                        _context.SaveChanges();
                         return Ok("Sikeres törlés!");
                     }
                     else
@@ -139,6 +132,5 @@ namespace CegautokAP.Controllers
                     return BadRequest($"Hiba a törlés közben: {ex.Message}");
                 }
             }
-        }
     }
 }

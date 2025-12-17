@@ -10,14 +10,19 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class KikuldetesController : ControllerBase
     {
+        private readonly FlottaContext _context;
+
+        public KikuldetesController(FlottaContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet("Jarmuvek")]
         public IActionResult GetJarmuvekDTO()
         {
-            using (var context = new FlottaContext())
-            {
                 try
                 {
-                    List<KikuldJarmuDTO> valasz = [.. context.Kikuldottjarmus
+                    List<KikuldJarmuDTO> valasz = [.. _context.Kikuldottjarmus
                         .Include(x => x.Kikuldetes)
                         .Include(x => x.Gepjarmu)
                         .Select(x => new KikuldJarmuDTO()
@@ -39,16 +44,13 @@ namespace CegautokAP.Controllers
                     });
                 }
             }
-        }
 
         [HttpGet("Jarmuvek/{Id}")]
         public IActionResult GetJarmuvekDTO(int Id)
         {
-            using (var context = new FlottaContext())
-            {
                 try
                 {
-                    Kikuldottjarmu jarmu = context.Kikuldottjarmus
+                    Kikuldottjarmu jarmu = _context.Kikuldottjarmus
                      .Include(x => x.Kikuldetes)
                      .Include(x => x.Gepjarmu)
                      .FirstOrDefault(x => x.Id == Id);
@@ -77,16 +79,14 @@ namespace CegautokAP.Controllers
                     });
                 }
             }
-        }
+        
 
         [HttpGet("Jarmu/{Id}/Hasznalat")]
         public IActionResult GetHasznalat(int Id)
         {
-            using (var context = new FlottaContext())
-            {
                 try
                 {
-                    Kikuldottjarmu jarmu = context.Kikuldottjarmus
+                    Kikuldottjarmu jarmu = _context.Kikuldottjarmus
                      .Include(x => x.Kikuldetes)
                      .Include(x => x.Gepjarmu)
                      .FirstOrDefault(x => x.Id == Id);
@@ -117,16 +117,13 @@ namespace CegautokAP.Controllers
                     });
                 }
             }
-        }
 
         [HttpGet("Jarmu/Sofor")]
         public IActionResult GetSoforDTO()
         {
-            using (var context = new FlottaContext())
-            {
                 try
                 {
-                    List<SoforDTO> dto = [.. context.Kikuldottjarmus
+                    List<SoforDTO> dto = [.. _context.Kikuldottjarmus
                          .Include(x => x.Gepjarmu)
                          .Include(x => x.SoforNavigation)
                          .GroupBy(x => new
@@ -154,7 +151,7 @@ namespace CegautokAP.Controllers
                     });
                 }
             }
-        }
+
         /*
          KikuldetesControllerben kellene megállpaítani, hogy adott Idű kiküldetésnél ki volt a sofőr
          */
@@ -164,9 +161,7 @@ namespace CegautokAP.Controllers
         {
             try
             {
-                using(var context = new FlottaContext())
-                {
-                    KikuldetesSoforDTO dto = context.Kikuldottjarmus
+                    KikuldetesSoforDTO dto = _context.Kikuldottjarmus
                         .Include(x => x.Sofor)
                         .Where(x => x.Kikuldetes.Id == Id)
                         .Select(x => new KikuldetesSoforDTO()
@@ -178,7 +173,6 @@ namespace CegautokAP.Controllers
 
                     if (dto is KikuldetesSoforDTO) return Ok(dto);
                     else return BadRequest("Nincs ilyen azonosítóval!");
-                }
 
             } catch (Exception ex)
             {
@@ -190,11 +184,9 @@ namespace CegautokAP.Controllers
         [HttpGet("Kikuldtes")]
         public IActionResult GetAllKikuldtes()
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    List<Kikuldete> kikuldtes = [.. context.Kikuldetes];
+                    List<Kikuldete> kikuldtes = [.. _context.Kikuldetes];
 
                     return Ok(kikuldtes);
 
@@ -210,18 +202,14 @@ namespace CegautokAP.Controllers
                         Befejezes = DateTime.Now
                     });
                 }
-
-            }
         }
 
         [HttpGet("KikuldteById/{Id}")]
         public IActionResult GetKikuldteById(int Id)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    var kikuldte = context.Kikuldetes.FirstOrDefault(u => u.Id == Id);
+                    var kikuldte = _context.Kikuldetes.FirstOrDefault(u => u.Id == Id);
                     if (kikuldte is Kikuldte)
                     {
                         return Ok(kikuldte);
@@ -244,20 +232,17 @@ namespace CegautokAP.Controllers
                         Befejezes = DateTime.Now
                     });
                 }
-            }
         }
 
 
         [HttpPost("NewKikuldte")]
         public IActionResult AddNewKikuldte(Kikuldte kikuldte)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
                     
-                    context.Add(kikuldte);
-                    context.SaveChanges();
+                    _context.Add(kikuldte);
+                    _context.SaveChanges();
                     return Ok("Sikeres rögzítés");
 
                 }
@@ -265,7 +250,6 @@ namespace CegautokAP.Controllers
                 {
                     return BadRequest($"Hiba történt a felvétel során: {ex.Message}");
                 }
-            }
         }
 
         //[HttpPut("ModifyKikuldte")]

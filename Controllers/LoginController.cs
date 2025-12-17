@@ -15,44 +15,43 @@ namespace CegautokAP.Controllers
     public class LoginController : ControllerBase
     {
         private readonly JwtSettings _jwtSettings;
+        private readonly FlottaContext _context;
 
-        public LoginController(JwtSettings jwtSettings)
+        public LoginController(JwtSettings jwtSettings, FlottaContext context)
         {
             _jwtSettings = jwtSettings;
+            _context = context;
         }
-        
+
         [HttpGet("GetSalt")]
         public IActionResult GetSalt(string username)
         {
             try
             {
-                using (var context = new FlottaContext())
+
+                if (_context.Users.Any(u => u.LoginName == username))
                 {
-                    if (context.Users.Any(u => u.LoginName == username))
-                    {
-                        return Ok(context.Users.First(u => u.LoginName == username).Salt);
-                    }
-                    else
-                    {
-                        return BadRequest("Nincs ilyen felhasználónév!");
-                    }
+                    return Ok(_context.Users.First(u => u.LoginName == username).Salt);
                 }
-            }catch (Exception ex)
-            {
-                return BadRequest("hiba: "+ ex.Message);
+                else
+                {
+                    return BadRequest("Nincs ilyen felhasználónév!");
+                }
             }
-            
+            catch (Exception ex)
+            {
+                return BadRequest("hiba: " + ex.Message);
+            }
+
         }
 
         [HttpPost("Login")]
         public IActionResult Login(LoginDTO loginDTO)
-        {
-            using (var context = new FlottaContext())
-            {
+        {  
                 try
                 {
                     string doubleHash = Program.CreateSHA256(loginDTO.Hash);
-                    User user = context.Users.FirstOrDefault(u => u.LoginName == loginDTO.LoginName && u.Hash == doubleHash && u.Active);
+                    User user = _context.Users.FirstOrDefault(u => u.LoginName == loginDTO.LoginName && u.Hash == doubleHash && u.Active);
                     if (user == null)
                     {
                         return NotFound("Nincs megfelelő felhasználó! A belépés sikertelen!");
@@ -73,11 +72,12 @@ namespace CegautokAP.Controllers
                         signingCredentials: creds);
                     return Ok(new JwtSecurityTokenHandler().WriteToken(token));
 
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     return BadRequest($"Hiba a bejelentkezés során: {ex.Message}");
                 }
             }
         }
     }
-}
+

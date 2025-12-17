@@ -5,6 +5,9 @@ using System.Text.Json.Serialization;
 using System.Security.Cryptography;
 using CegautokAP.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 namespace CegautokAP
 {
@@ -46,6 +49,8 @@ namespace CegautokAP
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<FlottaContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("FlottaConnection")));
+
             builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
             var jwtSettings = new JwtSettings();
@@ -75,6 +80,7 @@ namespace CegautokAP
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddCors(c => { c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()); });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -122,7 +128,7 @@ namespace CegautokAP
 
             app.UseAuthorization();
 
-
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.MapControllers();
 
             app.Run();

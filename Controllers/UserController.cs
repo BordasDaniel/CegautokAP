@@ -1,4 +1,5 @@
 ﻿using CegautokAP.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,14 +9,20 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly FlottaContext _context;
+
+        public UserController(FlottaContext context)
+        {
+            _context = context;
+        }
+
+        [Authorize]
         [HttpGet("Users")]
         public IActionResult GetAllUsers()
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    List<User> users = [.. context.Users];
+                    List<User> users = [.. _context.Users];
 
                     return Ok(users);
 
@@ -29,18 +36,15 @@ namespace CegautokAP.Controllers
                         Address = null
                     });
                 }
-
-            }
         }
 
+        
         [HttpGet("UserById/{Id}")]
         public IActionResult GetUserById(int Id)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    var user = context.Users.FirstOrDefault(u => u.Id == Id);
+                    var user = _context.Users.FirstOrDefault(u => u.Id == Id);
                     if (user is User)
                     {
                         return Ok(user);
@@ -65,41 +69,35 @@ namespace CegautokAP.Controllers
                         Address = null
                     });
                 }
-            }
         }
 
 
         [HttpPost("NewUser")]
         public IActionResult AddNewUser(User user)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
                     user.Image ??= @"defaultUser.jpg";
                     
-                    context.Add(user);
-                    context.SaveChanges();
+                    _context.Add(user);
+                    _context.SaveChanges();
                     return Ok("Sikeres rögzítés");
 
                 } catch (Exception ex)
                 {
                     return BadRequest($"Hiba történt a felvétel során: {ex.Message}");
                 }
-            }
         }
 
         [HttpPut("ModifyUser")]
         public IActionResult ModifyUser(User user)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    if (context.Users.Contains(user))
+                    if (_context.Users.Contains(user))
                     {
-                        context.Update(user);
-                        context.SaveChanges();
+                        _context.Update(user);
+                        _context.SaveChanges();
                         return Ok("Sikeres módosítás!");
                     }
                     else
@@ -110,21 +108,18 @@ namespace CegautokAP.Controllers
                 {
                     return BadRequest($"Hiba a módosítás során: {ex.Message}");
                 }
-            }
         }
 
         [HttpDelete("DelUser/{Id}")]
         public IActionResult DeleteUser(int Id)
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    if (context.Users.Select(u => u.Id).Contains(Id))
+                    if (_context.Users.Select(u => u.Id).Contains(Id))
                     {
-                        User del = context.Users.FirstOrDefault(u => u.Id == Id); 
-                        context.Remove(del);
-                        context.SaveChanges();
+                        User del = _context.Users.FirstOrDefault(u => u.Id == Id); 
+                        _context.Remove(del);
+                        _context.SaveChanges();
                         return Ok("Sikeres törlés!");
                     }
                     else
@@ -137,6 +132,5 @@ namespace CegautokAP.Controllers
                     return BadRequest($"Hiba a törlés közben: {ex.Message}");
                 }
             }
-        }
     }
 }

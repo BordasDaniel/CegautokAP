@@ -9,14 +9,19 @@ namespace CegautokAP.Controllers
     [ApiController]
     public class KikuldottjarmuController : ControllerBase
     {
+        private readonly FlottaContext _context;
+
+        public KikuldottjarmuController(FlottaContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet("KikuldottJarmuvek")]
         public IActionResult GetAllKikuldottJarmuvek()
         {
-            using (var context = new CegautokAP.Models.FlottaContext())
-            {
                 try
                 {
-                    List<Kikuldottjarmu> kikuldottjarmus = [.. context.Kikuldottjarmus
+                    List<Kikuldottjarmu> kikuldottjarmus = [.. _context.Kikuldottjarmus
                 .Include(k => k.Gepjarmu)
                 .Include(k => k.Kikuldetes)
                 .Include(k => k.SoforNavigation)];
@@ -27,6 +32,5 @@ namespace CegautokAP.Controllers
                     return BadRequest(ex.Message);
                 }
             }
-        }
     }
 }
