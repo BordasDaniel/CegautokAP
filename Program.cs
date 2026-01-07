@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
+using System.Net.Mail;
 
 namespace CegautokAP
 {
@@ -15,6 +16,30 @@ namespace CegautokAP
 
     public class Program
     {
+        private static MailSettings mailSettings = new();
+        public static async Task SendEmail(string mailAddressTo, string subject, string body)
+        {
+            MailMessage mail = new MailMessage();
+            SmtpClient SmtpServer = new SmtpClient(mailSettings.SmtpServer);
+            mail.From = new MailAddress(mailSettings.SenderEmail);
+            mail.To.Add(mailAddressTo);
+            mail.Subject = subject;
+            mail.Body = body;
+
+            /*System.Net.Mail.Attachment attachment;
+            attachment = new System.Net.Mail.Attachment("");
+            mail.Attachments.Add(attachment);*/
+
+            SmtpServer.Port = mailSettings.Port;
+            SmtpServer.Credentials = new System.Net.NetworkCredential(mailSettings.SenderEmail, mailSettings.SenderPassword);
+
+            SmtpServer.EnableSsl = true;
+
+            await SmtpServer.SendMailAsync(mail);
+
+        }
+
+
 
         public static string GenerateSalt()
         {
@@ -53,6 +78,13 @@ namespace CegautokAP
 
             builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+
+
+            // Mail settings
+            builder.Configuration.GetSection("MailServices").Bind(mailSettings);
+            builder.Services.AddSingleton(mailSettings);
+
+            // JWT Settings
             var jwtSettings = new JwtSettings();
             builder.Configuration.GetSection("JwtSettings").Bind(jwtSettings);
             builder.Services.AddSingleton(jwtSettings);
