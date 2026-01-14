@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using System.Net.Mail;
+using System.Net;
+using FluentFTP;
 
 namespace CegautokAP
 {
@@ -16,7 +18,29 @@ namespace CegautokAP
 
     public class Program
     {
+        private static FtpSettings ftpSettings = new();
+
         private static MailSettings mailSettings = new();
+        public static async Task<string> UploadToFtpServer(Stream filestream, string fileName)
+        {
+            try
+            {
+                NetworkCredential credential = new(ftpSettings.FtpUser, ftpSettings.FtpUser);
+                await using(IAsyncFtpClient client = new AsyncFtpClient(ftpSettings.Host, credential))
+                {
+                    client.Config.DataConnectionType = FtpDataConnectionType.AutoPassive;
+                    await client.Connect();
+                    await client.UploadStream(filestream, ftpSettings.SubFolder + fileName);
+                    await client.Disconnect();
+                    return fileName;
+                }
+
+            } catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
         public static async Task SendEmail(string mailAddressTo, string subject, string body)
         {
             MailMessage mail = new MailMessage();
@@ -83,6 +107,10 @@ namespace CegautokAP
             // Mail settings
             builder.Configuration.GetSection("MailServices").Bind(mailSettings);
             builder.Services.AddSingleton(mailSettings);
+
+            // FTP settings
+            builder.Configuration.GetSection("FtpSettings").Bind(ftpSettings);
+            builder.Services.AddSingleton(ftpSettings);
 
             // JWT Settings
             var jwtSettings = new JwtSettings();
