@@ -86,6 +86,7 @@ namespace CegautokAP.Controllers
                     {
                         command.Connection = connection;
                         connection.Open();
+                        restore.ImportFromFile(fileName);
                         System.IO.File.Delete(fileName);
                         return new JsonResult("A visszaállítás sikeres");
                     }
