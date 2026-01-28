@@ -23,6 +23,7 @@ namespace CegautokAP.Controllers
         }
 
         [Route("Backup")]
+        [HttpPost]
         //[Authorize("admin")]
         public async Task<IActionResult> SQLBackup(string fileName)
         {

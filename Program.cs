@@ -14,8 +14,6 @@ using FluentFTP;
 
 namespace CegautokAP
 {
-    
-
     public class Program
     {
         private static FtpSettings ftpSettings = new();

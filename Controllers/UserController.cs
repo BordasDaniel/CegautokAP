@@ -16,7 +16,7 @@ namespace CegautokAP.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = "10, 2")]
+        // [Authorize(Roles = "10, 2")]
         [HttpGet("Users")]
         public IActionResult GetAllUsers()
         {
